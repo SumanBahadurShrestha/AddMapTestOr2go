@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Google MAP</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+        <script async
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAnhTf79xLDcS0zj_cl_rjAVbx-cIBfwa8&callback=initMap&libraries=places&v=weekly"
+            defer>
+        </script>
+
+        <style type="text/css">
+            #map {
+                height: 500px;
+                width: 700px;
+            }
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                background: rgb(167, 167, 167);
+            }
+            .address .row{
+                margin-top: 2rem;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1.5rem;
+            }
+        </style>
+
+        <script>
+            let map;
+            let service;
+            let infowindow;
+            let queryAddress;
+            function initMap() {
+                const sydney = new google.maps.LatLng(-33.867, 151.195);
+                infowindow = new google.maps.InfoWindow();
+                map = new google.maps.Map(document.getElementById('map'), {
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    center: sydney,
+                    zoom: 15,
+                });
+                var locality = document.getElementById("locality").value;
+                var city = document.getElementById("city").value;
+                var state = document.getElementById("state").value;
+                var pin = document.getElementById("pin").value;
+                var address = locality+","+city+","+state+","+pin;
+                //here each ka value add karna baki ha........................... ..............
+                if(locality == "" && city == "" && state == "" && pin == ""){
+                    queryAddress = "Museum of Contemporary Art Australia";
+                }
+                else{
+                    queryAddress = address;
+                }
+                const request = {
+                    query: queryAddress,
+                    fields: ["name", "geometry"],
+                };
+
+                service = new google.maps.places.PlacesService(map);
+                service.findPlaceFromQuery(request, (results, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                        for (let i = 0; i < results.length; i++) {
+                            createMarker(results[i]);
+                        }
+                        map.setCenter(results[0].geometry.location);
+                    }
+                    else{
+                        alert("status bad");
+                    }
+                });
+            }
+
+            function createMarker(place) {
+                if (!place.geometry || !place.geometry.location) 
+                    return;
+                const marker = new google.maps.Marker({
+                    map,
+                    position: place.geometry.location,
+                });
+                google.maps.event.addListener(marker, "click", () => {
+                    infowindow.setContent(place.name || "");
+                    infowindow.open(map);
+                });
+            }
+
+            window.initMap = initMap;
+            
+        </script>
+
+    </head>
+
+    <body>
+        <section class="address" id="address">
+            <!-- <h1 class="heading"> Address</h1> -->
+            <div class="row">
+                <div id="map"></div>
+                <form onsubmit="initMap()">
+                    <input type="text" id="locality" placeholder="locality" class="box">
+                    <input type="text" id="city" placeholder="city" class="box">
+                    <input type="text" id="state" placeholder="state" class="box">
+                    <input type="number" id="pin" placeholder="pin" class="box">
+                    <input type="button" value="Show location" onclick="initMap();">
+                </form>
+            </div>
+        </section>
+
+        
+    </body>
+    </html>
