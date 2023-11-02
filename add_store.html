@@ -1,0 +1,1364 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Store - Or2Go</title>
+    <link rel="stylesheet" href="assets/css/main/app.css">
+    <link rel="stylesheet" href="assets/css/main/app-dark.css">
+    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+
+    <script type="text/javascript" src="myjs/jquery.min.js"></script>
+    <script type="text/javascript" src="myjs/jquery.form-validator.min.js"></script>
+    <script type="text/javascript" src="myjs/jquerysession.js"></script>
+    <!-- <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAnhTf79xLDcS0zj_cl_rjAVbx-cIBfwa8"></script> -->
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+    <script 
+        async
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAnhTf79xLDcS0zj_cl_rjAVbx-cIBfwa8&callback=initMap&libraries=places&v=weekly"
+        defer>
+    </script>
+    <script src="location-picker.min.js"></script>
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+    <script type="text/javascript">
+        var vendorid = ($.session.get("VendorId"));
+        var svendorid = ($.session.get("suid"));
+
+        if (vendorid == null || vendorid == "undefined" || svendorid == 'null' || svendorid == null) {
+
+            window.location.href = 'access_denied.html';
+        }
+    </script>
+    <style type="text/css">
+        #map {
+            height: 450px;
+            width: 100%;
+        }
+
+        #storelist th {
+            background-color: #000066;
+            color: white;
+        }
+
+        #storelist tr:hover {
+            background-color: blue;
+            color: white;
+        }
+
+        .tdhid {
+            display: none;
+        }
+
+        .colred {
+            color: red;
+        }
+
+    </style>
+    <style type="text/css">
+        #storelist th {
+            background-color: #000066;
+            color: white;
+        }
+
+        #storelist tr:hover {
+            background-color: blue;
+            color: white;
+        }
+
+        .tdhid {
+            display: none;
+        }
+        .err {
+            color: red;
+        }
+
+ 
+
+        #update {
+            display: none;
+        }
+
+
+         #map {
+            height: 450px;
+            width: 100%;
+        }
+
+          #storelist th{background-color:#000066;color: white;}
+          #storelist tr:hover{background-color:blue;color: white;}
+          .tdhid{display:none;}
+          .colred{color:red;}
+          /* #div2{display:none;} */
+          #invcontrol{ height:20px;width:20px;}
+
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div id="sidebar" class="active">
+            <div class="sidebar-wrapper active">
+                <div class="sidebar-header position-relative">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="logo">
+                            <a href="#"><img src="img/or2go.png" alt="Logo" srcset=""></a>
+                        </div>
+                        <div class="theme-toggle d-flex gap-2  align-items-center mt-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                aria-hidden="true" role="img" class="iconify iconify--system-uicons" width="20"
+                                height="20" preserveAspectRatio="xMidYMid meet" viewBox="0 0 21 21">
+                                <g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M10.5 14.5c2.219 0 4-1.763 4-3.982a4.003 4.003 0 0 0-4-4.018c-2.219 0-4 1.781-4 4c0 2.219 1.781 4 4 4zM4.136 4.136L5.55 5.55m9.9 9.9l1.414 1.414M1.5 10.5h2m14 0h2M4.135 16.863L5.55 15.45m9.899-9.9l1.414-1.415M10.5 19.5v-2m0-14v-2"
+                                        opacity=".3"></path>
+                                    <g transform="translate(-210 -1)">
+                                        <path d="M220.5 2.5v2m6.5.5l-1.5 1.5"></path>
+                                        <circle cx="220.5" cy="11.5" r="4"></circle>
+                                        <path d="m214 5l1.5 1.5m5 14v-2m6.5-.5l-1.5-1.5M214 18l1.5-1.5m-4-5h2m14 0h2">
+                                        </path>
+                                    </g>
+                                </g>
+                            </svg>
+                            <div class="form-check form-switch fs-6">
+                                <input class="form-check-input  me-0" type="checkbox" id="toggle-dark">
+                                <label class="form-check-label"></label>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                aria-hidden="true" role="img" class="iconify iconify--mdi" width="20" height="20"
+                                preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="m17.75 4.09l-2.53 1.94l.91 3.06l-2.63-1.81l-2.63 1.81l.91-3.06l-2.53-1.94L12.44 4l1.06-3l1.06 3l3.19.09m3.5 6.91l-1.64 1.25l.59 1.98l-1.7-1.17l-1.7 1.17l.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95l2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85c-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14c.4-.4.82-.76 1.27-1.08c.75-.53 1.93.36 1.85 1.19c-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82c-2.81 3.14-2.7 7.96.31 10.98c3.02 3.01 7.84 3.12 10.98.31Z">
+                                </path>
+                            </svg>
+                        </div>
+                        <div class="sidebar-toggler  x">
+                            <a href="#" class="sidebar-hide d-xl-none d-block"><i class="bi bi-x bi-middle"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="sidebar-menu">
+                    <ul class="menu">
+                        
+
+                        <li class="sidebar-item">
+                            <a href="home.html" class='sidebar-link'>
+                                <i class="bi bi-grid-fill"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+<li class="sidebar-item  has-sub">
+                <a href="#" class='sidebar-link'>
+                    <i class="bi bi-car-front-fill"></i>
+                    <span>Delivery</span>
+                </a>
+                <ul class="submenu ">
+                    <li class="submenu-item">
+                        <a href="delivery_model.html">Delivery Model</a>
+                    </li>
+                    <li class="submenu-item">
+                        <a href="assign_orders.html">Asign Packages</a>
+                    </li>
+                    <li class="submenu-item">
+                        <a href="track_packages.html">Track Packages</a>
+                    </li>
+                </ul>
+            </li>
+                        <li class="sidebar-item  has-sub">
+                            <a href="#" class='sidebar-link'>
+                                <i class="bi bi-person-bounding-box"></i>
+                                <span>Delivery Agent</span>
+                            </a>
+                            <ul class="submenu ">
+                                <li class="submenu-item ">
+                                    <a href="register_agent.html">Register Agent</a>
+                                </li>
+                                <li class="submenu-item ">
+                                    <a href="agent_list.html">Agent List</a>
+                                </li>
+                                <li class="submenu-item ">
+                                    <a href="agent_report.html">Agent Report</a>
+                                </li>
+                                <li class="submenu-item ">
+                                    <a href="activeda_location.html">Active DA Location</a>
+                                </li>
+                                <li class="submenu-item ">
+                                    <a href="reset_daid.html">Reset DA ID</a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="sidebar-title">Extra</li>
+                        <li class="sidebar-item">
+                            <a href="app_setting.html" class='sidebar-link'>
+                                <i class="bi bi-android2"></i>
+                                <span>App Settings</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item  has-sub">
+                            <a href="#" class='sidebar-link'>
+                                <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+                                <span>Subscriptions</span>
+                            </a>
+                            <ul class="submenu ">
+                                <li class="submenu-item ">
+                                    <a href="subscribe_now.html">Add Subscription</a>
+                                </li>
+                                <li class="submenu-item ">
+                                    <a href="renew_subscription.html">Renew Subscruption</a>
+                                </li>
+                                <li class="submenu-item ">
+                                    <a href="subscription_history.html">Subscriptions History</a>
+                                </li>
+                            </ul>
+                        </li>
+
+
+                        <li class="sidebar-title">Raise Support</li>
+
+                        <li class="sidebar-item  ">
+                            <a href="#" class='sidebar-link'>
+                                <i class="bi bi-life-preserver"></i>
+                                <span>Contact Us</span>
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div id="main" class='layout-navbar'>
+            <header class='mb-0'>
+                <nav class="navbar navbar-expand navbar-light navbar-top">
+                    <div class="container-fluid">
+                        <a href="#" class="burger-btn d-block">
+                            <i class="bi bi-justify fs-3"></i>
+                        </a>
+
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                            <ul class="navbar-nav ms-auto mb-lg-0">
+                                <li class="nav-item dropdown me-1">
+                                    <a class="nav-link active dropdown-toggle text-gray-600" href="#"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class='bi bi-envelope bi-sub fs-4'></i>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                        <li>
+                                            <h6 class="dropdown-header">Mail</h6>
+                                        </li>
+                                        <li><a class="dropdown-item" href="#">No new mail</a></li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item dropdown me-3">
+                                    <a class="nav-link active dropdown-toggle text-gray-600" href="#"
+                                        data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                                        <i class='bi bi-bell bi-sub fs-4'></i>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown"
+                                        aria-labelledby="dropdownMenuButton">
+                                        <li class="dropdown-header">
+                                            <h6>Notifications</h6>
+                                        </li>
+                                        
+                                        <li class="dropdown-item notification-item">
+                                            Not found
+                                        </li>
+                                        <li>
+                                            <p class="text-center py-2 mb-0"><a href="#">See all notification</a></p>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <div class="dropdown">
+                                <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="user-menu d-flex">
+                                        <div class="user-name text-end me-3">
+                                            <h6 class="mb-0 text-gray-600" id="user"></h6>
+                                            <script type="text/javascript">
+
+                                                var VendorId = ($.session.get("VendorId"));
+                                                var uname = ($.session.get("Name"));
+                         
+                                               $("#user").text(""+uname);
+                                                </script>
+                                            <p class="mb-0 text-sm text-gray-600">Vendor</p>
+                                        </div>
+                                        <div class="user-img d-flex align-items-center">
+                                            <div class="avatar avatar-md">
+                                                <img src="assets/images/faces/1.png">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton"
+                                    style="min-width: 11rem;">
+                                    
+                                    <li><a class="dropdown-item" href="profile.html"><i
+                                                class="icon-mid bi bi-person me-2"></i> My
+                                            Profile</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="icon-mid bi bi-gear me-2"></i>
+                                            Settings</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="icon-mid bi bi-wallet me-2"></i>
+                                            Wallet</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item logout" href="#"><i class="icon-mid bi bi-box-arrow-left me-2"></i> Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+            <div id="main-content">
+
+                <div class="page-heading">
+                    
+                    <section class="section">
+                <br>
+              <div class="card">
+                <div class="p-2">
+                    <div class="row">
+                        <div class="col-12 col-md-6 order-md-1 order-last">
+                            <h3 class="text-primary mb-0">Add Store Info</h3>
+                        </div>
+                        <div class="col-12 col-md-6 order-md-2 order-first">
+                            <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+                                <ol class="breadcrumb mb-0">
+                                    <li class="breadcrumb-item mb-0"><a href="index.html">Dashboard</a></li>
+                                    <li class="breadcrumb-item mb-0">Add New Store</li>
+                                </ol>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                <div class="progress progress-primary progress-sm  mb-0">
+                    <div class="progress-bar-striped progress-bar" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <br/>
+                     <div class="page-content">
+                        
+                 <div id="div1">     
+                     
+                    <div class="gbox">
+<div class="container">
+                        <p align="center" style="color:red;">* E-commerce Visitors can see Store Information , Kindly Fill Correct Information. </p>
+
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <label>Store Name<span class="colred">*</span></label>
+                                <input type="text" name="" id="storename" placeholder="Store Name" class="form-control" autofocus="true" required>
+                                <p class="colred" id="storename_err"></p>
+                                <script type="text/javascript">
+                                    $("#storename").on("input", function(){
+                                    
+                                     // var regexp = /[^a-zA-Z]/g;
+                                      var regexp= /[^0-9a-zA-Z ]/g;
+                                      if($(this).val().match(regexp)){
+                                      $(this).val( $(this).val().replace(regexp,''));
+                                      }
+                                    });
+                                  </script>
+                            </div>
+                            <div class="col-sm-4">
+                                <label>Service Type<span class="colred">*</span></label>
+                                <select class="form-select" id="servicetype" required>
+                                    <option value="" disabled selected style="display:none;">Service Type</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Mart">Mart</option> 
+                                    <option value="Medicine">Medicine</option>
+                                    </select>
+                                    <p class="colred" id="servicetype_err"></p>
+                            </div>
+                            <div class="col-sm-4">
+                                <label>Store Type<span class="colred">*</span></label>
+                                <select class="form-select" id="storetype" required>
+                                    <option value="" disabled selected style="display:none;">Store Type</option>
+                                    <option value="Restaurant">Restaurant</option>
+                                    <option value="Bakery">Bakery</option> 
+                                    <option value="Grocery">Grocery</option>
+                                    <option value="Medicine">Medicine</option>
+                                </select>
+                                    <p class="colred" id="storetype_err"></p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <label>Featured Tags<span class="colred"></span></label>
+                                <div class="input-group">
+                                    <input type="text" name="ftags" id="ftags" placeholder="Featured Tags" class="form-control" readonly="true">
+                                    <button type="button" class="btn btn-outline-success block" data-bs-toggle="modal" data-bs-target="#myModal"  id="search"> Select</button>
+                                </div>
+                                <p class="colred" id="ftags_err"></p>
+                                 
+                            </div>
+                            <div class="col-sm-4">
+                                <label>Mobile<span class="colred">*</span></label>
+                                <input type="text" name="" id="contact" placeholder="Contact Number" class="form-control" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" maxlength="10" required>
+                                <p class="colred" id="contact_err"></p>
+                            </div>
+                            <div class="col-sm-4">
+                                <label>Locality<span class="colred">*</span></label>
+                                <input type="text" name="" id="locality" placeholder="Locality" class="form-control" required>
+                                <p class="colred" id="locality_err"></p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <label>Pincode<span class="colred">*</span></label>
+                                <input type="text" name="" id="pincode" placeholder="Pincode" class="form-control" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" required>
+                                <p class="colred" id="pincode_err"></p>
+                            </div>
+                            <div class="col-sm-4">
+                                <label>City<span class="colred">*</span></label>
+                                <input type="text" name="" id="city" placeholder="City" class="form-control" required>
+                                <p class="colred" id="city_err"></p>
+                            </div>
+                            <div class="col-sm-4">
+                                <label>State<span class="colred">*</span></label>
+                                <select name="state" id="state" class="form-select" required>
+                                <option value="" disabled selected >Select State</option>
+                                <option label="">Andaman and Nicobar Islands</option>
+                                <option label="">Andhra Pradesh</option>
+                                <option label="">Arunachal Pradesh</option>
+                                <option label="">Assam</option>
+                                <option label="">Bihar</option>
+                                <option label="">Chandigarh</option> 
+                                <option label="">Chhattisgarh</option>
+                                <option label="">Dadra and Nagar Haveli</option> 
+                                <option label="">Daman and Diu</option>
+                                <option label="">Delhi</option>
+                                <option label="">Goa</option>
+                                <option label="">Gujarat</option>
+                                <option label="">Haryana</option>
+                                <option label="">Himachal Pradesh</option>
+                                <option label="">Jammu and Kashmir</option>
+                                <option label="">Jharkhand</option>
+                                <option label="">Karnataka</option>
+                                <option label="">Kerala</option>
+                                <option label="">Lakshadweep</option> 
+                                <option label="">Madhya Pradesh</option>
+                                <option label="">Maharashtra</option>
+                                <option label="">Manipur</option>
+                                <option label="">Meghalaya</option>
+                                <option label="">Mizoram</option>
+                                <option label="">Nagaland</option>
+                                <option label="">Odisha</option>
+                                <option label="">Puducherry</option> 
+                                <option label="">Punjab</option>
+                                <option label="">Rajasthan</option>
+                                <option label="">Sikkim</option>
+                                <option label="">Tamil Nadu</option>
+                                <option label="">Telangana</option>
+                                <option label="">Tripura</option>
+                                <option label="">Uttar Pradesh</option>
+                                <option label="">Uttarakhand</option>
+                                <option label="">West Bengal</option>  
+                                </select>
+                                <p class="colred" id="state_err"></p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <label>Minimum Order Cost<span class="colred">*</span></label>
+                                 <input type="text" name="" id="minordcost" placeholder="Minimum Order Cost" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" required>
+                                <p class="colred" id="minordcost_err"></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <label>Receive Order<span class="colred">*</span></label>
+                              <select class="form-select" id="manageorder" required>
+                                <option value="1">Online</option> 
+                                <option value="2">Any Time</option>
+                                <option value="3">Open Time</option>
+                               </select>
+                               <p class="colred" id="manageorder_err"></p>
+                                    </div>
+
+                                </div>
+                                
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <label>Sale Status<span class="colred">*</span></label>
+                              <select class="form-select" id="status" required>
+                                <option value="" disabled selected style="display:none;">Select Status</option>
+                                <option value="1">Active</option> 
+                                <option value="0">Inactive</option>
+                               </select>
+                               <p class="colred" id="status_err"></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <label>Pay Option<span class="colred">*</span></label>
+                              <select class="form-select" id="payoption" required>
+                                <option value="1">ALL</option> 
+                                <option value="2">COD</option>
+                                <option value="3">ONLINE</option>
+                                <option value="4">ONLINE_PREPAY</option>
+                                <option value="0">NONE</option>
+                               </select>
+                               <p class="colred" id="payoption_err"></p>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <div class="col-sm-4">
+                                <label>Password<span class="colred">*</span></label>
+                                 <input type="text" name="" id="password" placeholder="Password" class="form-control" required>
+                                <p class="colred" id="password_err"></p>
+                            </div>
+                            
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div>
+                                    <label>Working Start Time<span class="colred">*</span></label>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="input-group">
+                                                    <select name="wshr" id="wshr" class="form-select" required>
+                                                        <option value="00">00</option>
+                                                        <option value="01">01</option>
+                                                        <option value="02">02</option>
+                                                        <option value="03">03</option>
+                                                        <option value="04">04</option>
+                                                        <option value="05">05</option>
+                                                        <option value="06">06</option>
+                                                        <option value="07">07</option>
+                                                        <option value="08">08</option>
+                                                        <option value="09">09</option>
+                                                        <option value="10">10</option>
+                                                        <option value="11">11</option>
+                                                        <option value="12">12</option>
+                                                        <option value="13">13</option>
+                                                        <option value="14">14</option>
+                                                        <option value="15">15</option>
+                                                        <option value="16">16</option>
+                                                        <option value="17">17</option>
+                                                        <option value="18">18</option>
+                                                        <option value="19">19</option>
+                                                        <option value="20">20</option>
+                                                        <option value="21">21</option>
+                                                        <option value="22">22</option>
+                                                        <option value="23">23</option>
+                                                    </select>
+                                                    <label class="input-group-text">hh</label>
+                                                </div>
+                                                
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="input-group">
+                                                    
+                                                    <select name="wsmn" id="wsmn" class="form-select" required>
+
+                                                        <option value="00">00</option>
+                                                        <option value="01">01</option>
+                                                        <option value="02">02</option>
+                                                        <option value="03">03</option>
+                                                        <option value="04">04</option>
+                                                        <option value="05">05</option>
+                                                        <option value="06">06</option>
+                                                        <option value="07">07</option>
+                                                        <option value="08">08</option>
+                                                        <option value="09">09</option>
+                                                        <option value="10">10</option>
+                                                        <option value="11">11</option>
+                                                        <option value="12">12</option>
+                                                        <option value="13">13</option>
+                                                        <option value="14">14</option>
+                                                        <option value="15">15</option>
+                                                        <option value="16">16</option>
+                                                        <option value="17">17</option>
+                                                        <option value="18">18</option>
+                                                        <option value="19">19</option>
+                                                        <option value="20">20</option>
+                                                        <option value="21">21</option>
+                                                        <option value="22">22</option>
+                                                        <option value="23">23</option>
+                                                        <option value="24">24</option>
+                                                        <option value="25">25</option>
+                                                        <option value="26">26</option>
+                                                        <option value="27">27</option>
+                                                        <option value="28">28</option>
+                                                        <option value="29">29</option>
+                                                        <option value="30">30</option>
+                                                        <option value="31">31</option>
+                                                        <option value="32">32</option>
+                                                        <option value="33">33</option>
+                                                        <option value="34">34</option>
+                                                        <option value="35">35</option>
+                                                        <option value="36">36</option>
+                                                        <option value="37">37</option>
+                                                        <option value="38">38</option>
+                                                        <option value="39">39</option>
+                                                        <option value="40">40</option>
+                                                        <option value="41">41</option>
+                                                        <option value="42">42</option>
+                                                        <option value="43">43</option>
+                                                        <option value="44">44</option>
+                                                        <option value="45">45</option>
+                                                        <option value="46">46</option>
+                                                        <option value="47">47</option>
+                                                        <option value="48">48</option>
+                                                        <option value="49">49</option>
+                                                        <option value="50">50</option>
+                                                        <option value="51">51</option>
+                                                        <option value="52">52</option>
+                                                        <option value="53">53</option>
+                                                        <option value="54">54</option>
+                                                        <option value="55">55</option>
+                                                        <option value="56">56</option>
+                                                        <option value="57">57</option>
+                                                        <option value="58">58</option>
+                                                        <option value="59">59</option>
+
+
+                                                    </select>
+                                                    <label class="input-group-text">mm</label>
+                                                </div>
+                                               
+                                            </div>
+                                        </div>
+                                        <p class="colred" id="workstime_err"></p>
+                                </div>
+                                
+                            </div>
+                            <div class="col-sm-4">
+                                <div>
+                                    <label>Working End Time<span class="colred">*</span></label>
+                                <div class="row">
+        
+                                     <div class="col-6">
+                                        <div class="input-group">
+                                    <select name="wehr" id="wehr" class="form-select" required>
+                                        <option value="23" selected >23</option>
+                                        <option value="00">00</option>
+                                        <option value="01">01</option> 
+                                        <option value="02">02</option>
+                                        <option value="03">03</option>
+                                        <option value="04">04</option>
+                                        <option value="05">05</option>
+                                        <option value="06">06</option>
+                                        <option value="07">07</option>
+                                        <option value="08">08</option>
+                                        <option value="09">09</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
+                                        <option value="18">18</option>
+                                        <option value="19">19</option>
+                                        <option value="20">20</option>
+                                        <option value="21">21</option>
+                                        <option value="22">22</option>
+                                        <option value="23">23</option>
+                                        </select>
+        
+                                        <label class="input-group-text">hh</label>
+                                    </div>
+                                        </div>
+                                 <div class="col-6">
+                                    <div class="input-group">
+                                    <select name="wemn" id="wemn" class="form-select" required>
+                                        <option value="59" selected >59</option>
+                                        <option value="00" >00</option>
+                                        <option value="01">01</option> 
+                                        <option value="02">02</option>
+                                        <option value="03">03</option>
+                                        <option value="04">04</option>
+                                        <option value="05">05</option>
+                                        <option value="06">06</option>
+                                        <option value="07">07</option>
+                                        <option value="08">08</option>
+                                        <option value="09">09</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
+                                        <option value="18">18</option>
+                                        <option value="19">19</option>
+                                        <option value="20">20</option>
+                                        <option value="21">21</option>
+                                        <option value="22">22</option>
+                                        <option value="23">23</option>
+                                        <option value="24">24</option>
+                                        <option value="25">25</option>
+                                        <option value="26">26</option>
+                                        <option value="27">27</option>
+                                        <option value="28">28</option>
+                                        <option value="29">29</option>
+                                        <option value="30">30</option>
+                                        <option value="31">31</option>
+                                        <option value="32">32</option>
+                                        <option value="33">33</option>
+                                        <option value="34">34</option>
+                                        <option value="35">35</option>
+                                        <option value="36">36</option>
+                                        <option value="37">37</option>
+                                        <option value="38">38</option>
+                                        <option value="39">39</option>
+                                        <option value="40">40</option>
+                                        <option value="41">41</option>
+                                        <option value="42">42</option>
+                                        <option value="43">43</option>
+                                        <option value="44">44</option>
+                                        <option value="45">45</option>
+                                        <option value="46">46</option>
+                                        <option value="47">47</option>
+                                        <option value="48">48</option>
+                                        <option value="49">49</option>
+                                        <option value="50">50</option>
+                                        <option value="51">51</option>
+                                        <option value="52">52</option>
+                                        <option value="53">53</option>
+                                        <option value="54">54</option>
+                                        <option value="55">55</option>
+                                        <option value="56">56</option>
+                                        <option value="57">57</option>
+                                        <option value="58">58</option>
+                                        <option value="59">59</option>
+                                        
+        
+                                        </select>
+                                        <label class="input-group-text">mm</label>
+                                        </div>
+                                    <p class="colred" id="worketime_err"></p>
+                                    </div>
+                                  
+                                </div>
+                                </div>
+                            </div>                            
+                            <div class="col-sm-4">
+                                <labe>GEO Location</labe>
+                                <div class="input-group">
+                                    <input type="text" name="" id="geolocation" placeholder="GEO Location" class="form-control" required>
+                                    <button type="button" class="btn btn-outline-primary block" data-bs-toggle="modal" data-bs-target="#div2"  id="selectgps"> Select</button>
+                                </div>
+                                
+                                <p class="colred" id="geolocation_err"></p>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <label>Description<span class="colred">*</span></label>
+                                <textarea class="form-control" id="description" rows="3" placeholder="Store Description" required> </textarea>
+                                <p class="colred" id="description_err"></p>
+                            </div>
+                            <div class="col-sm-4">
+                                <div>
+                                    <label>Closed ON<span class="colred"></span></label>
+                                    <div class="input-group">
+                                        <textarea rows="3" type="text" name="closedon" id="closedon" placeholder="Closed ON" class="form-control" readonly="true"></textarea>
+                                        <button type="button" class="btn btn-outline-primary block" data-bs-toggle="modal" data-bs-target="#myModal2"  id=""> Select</button>
+                                    </div>
+                                    
+                                    <p class="colred" id="closedon_err"></p>
+                                    
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                
+                                <label>Select Logo<span class="colred">*</span></label>
+                                <input type="file" class="form-control" id ="logo_image" name="photo"  accept="image/png,image/jpeg"  onchange="validateFileType()" required>
+                                <p class="colred" id="logo_image_err"></p>
+                                    <div align="center">
+                                        <p class="mb-1 text-primary">Preview of Selected Image</p>
+                                        <img src="" id="imgp" height="100px" alt="No Image Selected">
+                                    </div>
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="div5">
+                                    <input type="checkbox" name="invcontrol" id="invcontrol" value="1" placeholder="" class="" onclick="invcontrol()" > <label style="font-size:20px;color:blue;">Inventory Control</label>
+                                    <p class="colred" id="invcontrol_err"></p>
+                                    <input type="hidden" name="invcontrolval" id="invcontrolval" value="0">
+    
+                                     </div>
+                            </div>
+                            
+                            
+                        </div>
+                        
+
+                         <div id="area">
+                        
+                       </div>
+
+                       <div style="display:none;">
+                                <script>
+
+                        $().ready(function() {
+
+                            $('input[name=photo]').change(function(e) {
+                                var file = e.target.files[0];
+
+                                // RESET
+                                $('#area p span').css('width', 0 + "%").html('');
+                                $('#area img, #area canvas').remove();
+                                $('#area i').html(JSON.stringify(e.target.files[0]).replace(/,/g, ", <br/>"));
+
+                                // CANVAS RESIZING
+                                canvasResize(file, {
+                                    width: 400,
+                                    height: 400,
+                                    crop: false,
+                                    quality: 70,
+                                    rotate: 0,
+                                    callback: function(data, width, height) {
+
+                                        // SHOW AS AN IMAGE
+                                        // =================================================
+                                        var img = new Image();
+                                        img.onload = function() {
+
+                                            $(this).css({
+                                                'margin': '10px auto',
+                                                'width': width,
+                                                'height': height
+                                            }).appendTo('#area div');
+
+                                        };
+                                        $(img).attr('src', data);
+
+                                        //alert(data);
+                                        $('#blobimage').val(data);
+     
+                                    }
+                                });
+
+                            });
+                        });
+
+
+                    </script>
+                         <input type="hidden" name="blobimage" id="blobimage">
+                      </div>
+
+
+                        <div class="row">
+                            <div class="col-sm-4"></div>
+                           
+                            <div class="col-sm-4" align="center">
+                              
+                                <button class="btn btn-primary mb-10 col-12" id="submit">Submit</button>
+                            </div>
+                            
+                            <div class="col-sm-4"></div>
+                        </div>
+
+                    </div>
+                    </div>
+     
+                </div>
+
+
+
+
+
+
+<div class="modal modal-lg modal-fullscreen-md-down fade" data-bs-backdrop="static" data-bs-keyboard="false" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+            <div style="display:none;">
+          <button type="button" class="close" id="tclose1"  data-dismiss="modal">&times;</button>
+          </div>
+          <h4 class="modal-title">Featured Tag List</h4>
+        </div>
+        <div class="modal-body">
+
+       <div style="overflow-x:scroll; overflow-y:scroll; height:350px; width:auto;">
+
+        <div style="font-size:25px;color:blue;">
+            <table width="100%">
+                <tbody>
+                    <tr>
+            <td><input type="checkbox" name="ftag1" id="ftag1" value="Afghani"> <label>Afghani</label></td>
+            <td><input type="checkbox" name="ftag1" id="ftag1" value="Bekery"> <label>Bekery</label></td>
+            <td><input type="checkbox" name="ftag1" id="ftag1" value="Bengali"> <label>Bengali</label> </td>
+            <td><input type="checkbox" name="ftag1" id="ftag1" value="Biriyani"> <label>Biriyani</label></td>
+                 
+                    </tr>
+
+            <tr>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Chinese"> <label>Chinese </label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="French"> <label>French</label> </td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Gujrati"> <label>Gujrati</label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Indian"> <label>Indian</label></td>
+                
+
+            </tr> 
+
+            <tr>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Italian"> <label>Italian</label> </td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Japanese"> <label>Japanese</label> </td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Marwadi"> <label>Marwadi</label> </td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Maxican"> <label>Maxican</label></td>
+                
+              
+                
+            </tr> 
+
+             <tr>
+                
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Middle Eastern"> <label>Middle Eastern</label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Nepali"> <label>Nepali</label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="North Indian"> <label>North Indian</label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Odia"> <label>Odia</label></td>
+     
+            </tr> 
+
+            <tr>
+                
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Punjabi"> <label>Punjabi</label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Prasad"> <label>Prasad</label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Pure Vegiterian"> <label>Pure Vegiterian</label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="South Indian"> <label>South Indian</label></td>
+     
+            </tr>
+
+             <tr>
+                
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Spanish"> <label>Spanish</label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Tandoor"> <label>Tandoor</label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Thai"> <label>Thai</label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Turkish"> <label>Turkish</label></td>
+     
+            </tr>
+
+            <tr>
+                
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Breakfast"> <label>Breakfast</label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Snacks"> <label>Snacks</label></td>
+                <td><input type="checkbox" name="ftag1" id="ftag1" value="Fastfood"> <label>Fastfood</label></td>
+                <td></td>
+     
+            </tr>
+
+
+            <tr>
+                <td><input type="checkbox" name="ftago" id="ftago" value="Other"> <label style="color:red;">Other Specify</label></td>
+                <td colspan="3">
+                    <input type="text" name="ftagother" id="ftagother" class="form-control" placeholder="Entert Featured Tags">
+                </td>
+            </tr> 
+
+                </tbody>
+            </table>
+          
+            </div>
+
+
+           </div>
+        </div>
+            <div class="modal-footer p-2">
+                   <button type="button" class="btn btn-sm btn-warning" data-bs-dismiss="modal">
+                     <i class="bx bx-x d-block d-sm-none"></i>
+                  <span class="d-none d-sm-block">Close</span>
+                 </button>
+                 <button type="button" class="btn btn-sm btn-success ml-1" data-bs-dismiss="modal">
+                  <i class="bx bx-check d-block d-sm-none"></i>
+                  <span class="d-none d-sm-block" id="tclose2">Accept</span>
+                  </button>
+               </div>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+        <div class="modal modal-lg modal-fullscreen-md-down fade" data-bs-backdrop="static" data-bs-keyboard="false" id="myModal2" role="dialog">
+    <div class="modal-dialog">
+
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+            <div style="display:none;">
+          <button type="button" class="close" id="tclose3"  data-dismiss="modal">&times;</button>
+          </div>
+          <h4 class="modal-title" style="color:red;">Closed ON</h4>
+        </div>
+        <div class="modal-body">
+
+       <div style="overflow-x:scroll; overflow-y:scroll; height:400px; width:auto;">
+
+        <!-- <h4 align="center" style="color:#990033;">Select Store Closing Date</h4> -->
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <label class="text-primary fw-bolder">Select Store Closing Date: </label>
+                <div class="input-group">
+                    <input type="date" name="cldate" id="cldate" class="form-control">
+                    <button class="btn btn-primary btn-sm" id="adddate">Add</button>
+                </div>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+            
+            <label class="colred" id="cldate_err"></label>
+          
+
+            <textarea rows="3" readonly="true" class="form-control mb-2" id="tbcldate">
+                
+            </textarea>
+
+            <h4 align="center" style="color:#990033;">Select Store Closing Day</h4>
+
+            <div style="font-size:25px;color:blue;">
+
+            <table width="100%">
+                <tbody>
+                    <tr>
+                      <td><input type="checkbox" name="stcl1" id="stcl1" value="Sun"> <label>Every Sunday</label></td>
+                      <td><input type="checkbox" name="stcl1" id="stcl1" value="Mon"> <label>Every Monday</label></td>
+                      <td><input type="checkbox" name="stcl1" id="stcl1" value="Tue"> <label>Every Tuesday</label></td>
+                    </tr>
+
+                   <tr>
+                      <td><input type="checkbox" name="stcl1" id="stcl1" value="Wed"> <label>Every Wednesday</label></td>
+                      <td><input type="checkbox" name="stcl1" id="stcl1" value="Thu"> <label>Every Thursday</label></td>
+                      <td><input type="checkbox" name="stcl1" id="stcl1" value="Fri"> <label>Every Friday</label></td>
+                    </tr>
+
+                    <tr>
+                      <td><input type="checkbox" name="stcl1" id="stcl1" value="Sat"> <label>Every Saturday</label></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+
+
+
+
+                </tbody>
+            </table>
+
+            </div>
+
+
+           </div>
+        </div>
+        <div class="modal-footer p-1">
+                  <button type="button" class="btn btn-sm btn-warning" data-bs-dismiss="modal">
+                    <i class="bx bx-x d-block d-sm-none"></i>
+                 <span class="d-none d-sm-block">Close</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-success ml-1" data-bs-dismiss="modal">
+                 <i class="bx bx-check d-block d-sm-none"></i>
+                 <span class="d-none d-sm-block" id="tclose4">Accept</span>
+                 </button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+
+
+<div style="display:none;">
+    <input type="hidden" name="storeid" id="storeid">
+</div>
+
+
+
+                                    </div><!-- /.col -->
+
+                                    <!-- /.row -->
+                                </div><!-- /.page-content -->
+                           
+                    </section>
+                </div>
+                <!-- <div id="div2">
+                    <div class="container">
+       
+               <div>
+                   <div id="map"></div><br>
+       
+                   <div class="row">
+                       <div class="col-sm-2"></div>
+                       <div class="col-sm-4" align="center">
+                           <button id="confirmPosition" class="btn-success btn-lg">Confirm Position</button>
+                       </div>
+                       <div class="col-sm-4" align="center">
+                           <button id="currentPosition" class="btn-warning" onClick="locate()">Current Position</button><br>
+                       </div>
+                       <div class="col-sm-2"></div>
+                   </div>
+                   
+               </div>
+            </div>
+                           
+                       </div> -->
+                <div id="div2-1">
+                    <div class="modal modal-lg modal-fullscreen fade" data-bs-backdrop="static" data-bs-keyboard="false" id="div2" role="dialog">
+                        <div class="modal-dialog">
+
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Select Store Geo Location</h5>
+                                </div>
+                                <div class="modal-body">
+                                    
+                                    <div id="map"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-warning" data-bs-dismiss="modal">
+                                        <i class="bx bx-x d-block d-sm-none"></i>
+                                        <span class="d-none d-sm-block">Cancel</span>
+                                    </button>
+                                    <button type="button" id="confirmPosition" class="btn btn-primary" data-bs-dismiss="modal">
+                                        <i class="bx bx-x d-block d-sm-none"></i>
+                                        <span class="d-none d-sm-block">Confirm Position</span>
+                                    </button>
+                                    <!-- <button type="button" class="btn btn-success ml-1" data-bs-dismiss="modal"  id="currentPosition" onClick="locate()">
+                                        <i class="bx bx-check d-block d-sm-none"></i>
+                                        <span class="d-none d-sm-block">Current Position</span>
+                                    </button> -->
+                                </div>
+                            </div>   
+                        </div>   
+                    </div>          
+                    
+
+                </div>
+                <footer>
+                    <div class="footer clearfix mb-0 text-muted">
+                        <div class="float-start">
+                            <p>2023 &copy; Or2Go</p>
+                        </div>
+                        <div class="float-end">
+                            <p>Powered by <span class="text-danger"><i class="bi bi-heart-fill icon-mid"></i></span>
+                                <a href="https://ingeni-systems.com">Ingeni Infosystem Pvt. Ltd.</a></p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+    <script src="assets/js/bootstrap.js"></script>
+    <script src="assets/js/app.js"></script>
+
+    <script type="text/javascript" src="img-resize/binaryajax.js"></script>
+        <script type="text/javascript" src="img-resize/exif.js"></script>
+        <script type="text/javascript" src="img-resize/canvasResize.js"></script>
+        <script type="text/javascript" src="img-resize/jquery-1.7.2.min.js" ></script>
+
+
+
+    <script type="text/javascript" src="myjs/jquery.min.js"></script>
+    <script type="text/javascript" src="myjs/jquery.form-validator.min.js"></script>
+    <script type="text/javascript" src="myjs/jquerysession.js"></script>
+    <script type="text/javascript" src="myjs/js-add-store.js"></script>
+    <script>
+         function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    $('#blah')
+                        .attr('src', e.target.result);
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+
+    <script type="text/javascript">
+        document.oncontextmenu = document.body.oncontextmenu = function() {return false;}
+
+        $('#storeid').on('keyup', function () {
+            document.getElementById("storeid_err").innerHTML = null;
+        });
+        $('#storename').on('keyup', function () {
+            document.getElementById("storename_err").innerHTML = null;
+        });
+        $('#servicetype').on('change', function () {
+            document.getElementById("servicetype_err").innerHTML = null;
+        });
+        $('#storetype').on('change', function () {
+            document.getElementById("storetype_err").innerHTML = null;
+        });
+        $('#contact').on('keyup', function () {
+            document.getElementById("contact_err").innerHTML = null;
+        });
+        $('#ftags').on('keyup', function () {
+            document.getElementById("ftags_err").innerHTML = null;
+        });
+        $('#description').on('keyup', function () {
+            document.getElementById("description_err").innerHTML = null;
+        });
+        $('#locality').on('keyup', function () {
+            document.getElementById("locality_err").innerHTML = null;
+        });
+        $('#pincode').on('keyup', function () {
+            document.getElementById("pincode_err").innerHTML = null;
+        });
+        $('#city').on('keyup', function () {
+            document.getElementById("city_err").innerHTML = null;
+        });
+        $('#state').on('change', function () {
+            document.getElementById("state_err").innerHTML = null;
+        });
+        $('#minordcost').on('keyup', function () {
+            document.getElementById("minordcost_err").innerHTML = null;
+        });
+        $('#status').on('change', function () {
+            document.getElementById("status_err").innerHTML = null;
+        });
+        $('#wehr').on('change', function () {
+            document.getElementById("worketime_err").innerHTML = null;
+        });
+        $('#wemn').on('change', function () {
+            document.getElementById("worketime_err").innerHTML = null;
+        });      
+        $('#cldate').on('change', function () {
+            document.getElementById("cldate_err").innerHTML = null;
+        });
+        $('#password').on('keyup', function () {
+            document.getElementById("password_err").innerHTML = null;
+        });
+        $('#manageorder').on('change', function () {
+            document.getElementById("manageorder_err").innerHTML = null;
+        });
+
+        $('#payoption').on('change', function () {
+            document.getElementById("payoption_err").innerHTML = null;
+        });
+        $('#geolocation').on('keyup', function () {
+            document.getElementById("geolocation_err").innerHTML = null;
+        });
+        $('#closedon').on('change', function () {
+        // document.getElementById("closedon_err").innerHTML = null;
+        });
+        $('#logo_image').on('change', function () {
+            document.getElementById("logo_image_err").innerHTML = null;
+        });
+        
+    </script>
+
+    <script type="text/javascript">
+            
+            function validateFileType(){
+                if(event.target.files.length > 0){
+                    var src = URL.createObjectURL(event.target.files[0]);
+                    var preview = document.getElementById("imgp");
+                    preview.src = src;
+                    preview.style.display = "block";
+                }
+                document.getElementById("timage_error").innerHTML = null;
+                 var fileName = document.getElementById("top_image").value;
+                 var idxDot = fileName.lastIndexOf(".") + 1;
+                 var extFile = fileName.substr(idxDot, fileName.length).toLowerCase();
+                 if (extFile=="png" || extFile=="jpg" || extFile=="jpeg" || extFile=="bmp"){
+                    var size=1300000;
+                     var file_size=document.getElementById('top_image').files[0].size;
+                      if(file_size>=size){
+                         document.getElementById("top_image").value = "";
+                         alert('Image File not MAX 1 MB !');
+                         return false;
+                         }
+                     }else{
+                        document.getElementById("top_image").value = "";
+                        alert("Only jpg/jpeg/png and bmp files are allowed!");
+                         }   
+                 }
+        </script>
+
+
+    <script type="text/javascript">
+
+
+      function invcontrol() {
+      // document.getElementById("invcontrolval").value=0;
+      var checkBox = document.getElementById("invcontrol");
+      if (checkBox.checked == true){
+        document.getElementById("invcontrolval").value=1;
+       // document.getElementById('vendiv').style.display = "block";
+      }else{
+        document.getElementById("invcontrolval").value=0;
+       // document.getElementById('vendiv').style.display = "none";
+
+     }
+  }
+    
+
+        // Get element references
+        var map = document.getElementById('map');
+        var confirmBtn = document.getElementById('confirmPosition');
+        var currentBtn = document.getElementById('currentPosition');
+        var onClickPositionView = document.getElementById('onClickPositionView');
+        // var onIdlePositionView = document.getElementById('onIdlePositionView');
+        //get current location
+        function locate() {
+            document.getElementById("confirmPosition").disabled = true;
+            document.getElementById("currentPosition").innerHTML = "Processing...";
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var currentLatitude = position.coords.latitude;
+                    var currentLongitude = position.coords.longitude;
+                    var infoWindowHTML = "Latitude: " + currentLatitude + "<br>Longitude: " + currentLongitude;
+                    // var infoWindow = new google.maps.InfoWindow({map: map, content: infoWindowHTML});
+                    // var currentLocation = { lat: currentLatitude, lng: currentLongitude };
+                    // infoWindow.setPosition(currentLocation);
+                    document.getElementById("onClickPositionView").innerHTML = infoWindowHTML;
+                    document.getElementById("currentPosition").style.display = 'none';
+                });
+            }
+        }
+        // Initialize LocationPicker plugin
+
+        //23.192088874484966, 79.37389216481823
+        //globe- 45.5017,-73.5673
+        var lp = new locationPicker(map, {
+            // picker options
+            // latitude
+            lat: 23.192088874484966,
+            // longitude
+            lng: 79.37389216481823,
+            // auto try and detect and set the marker to the the current user's location
+            setCurrentPosition: true
+        }, {
+            // Google Maps Options
+            zoom: 4
+        });
+        // Listen to button onclick event
+        confirmBtn.onclick = function () {
+            // Get current location and show it in HTML
+            var location = lp.getMarkerPosition();
+            // onClickPositionView.innerHTML = 'The chosen location is ' + location.lat + ',' + location.lng;
+            document.getElementById("geolocation").value = location.lat + ',' + location.lng;
+            // document.getElementById("div1").style.display = "block";
+            // document.getElementById("div2").style.display = "none";
+
+        };
+
+    </script>
+</body>
+
+</html>
